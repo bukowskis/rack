@@ -22,7 +22,6 @@ module Rack
     end
 
     def body;            @env["rack.input"]                       end
-    def scheme;          @env["rack.url_scheme"]                  end
     def script_name;     @env["SCRIPT_NAME"].to_s                 end
     def path_info;       @env["PATH_INFO"].to_s                   end
     def port;            @env["SERVER_PORT"].to_i                 end
@@ -34,6 +33,19 @@ module Rack
     def session_options; @env['rack.session.options'] ||= {}      end
     def logger;          @env['rack.logger']                      end
 
+    def scheme
+      if @env['HTTPS'] == 'on'
+        'https'
+      elsif @env['HTTP_X_FORWARDED_SSL'] == 'on'
+        'https'
+      elsif @env['HTTP_X_FORWARDED_SCHEME']
+        @env['HTTP_X_FORWARDED_SCHEME']
+      elsif @env['HTTP_X_FORWARDED_PROTO']
+        @env['HTTP_X_FORWARDED_PROTO'].split(',')[0]
+      else
+        @env["rack.url_scheme"]
+      end
+    end
     # The media type (type/subtype) portion of the CONTENT_TYPE header
     # without any media type parameters. e.g., when CONTENT_TYPE is
     # "text/plain;charset=utf-8", the media-type is "text/plain".
